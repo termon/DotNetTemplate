@@ -13,7 +13,7 @@ Password hashing functionality added via the ```Template.Core.Security.Hasher```
 
 The Data project encapsulates all data related concerns. It provides an implementation of ```Template.Core.Services.IUserService``` using EntityFramework to handle data storage/retrieval. It defaults to using Sqlite for portability across platforms.
 
-The Service is the only element exposed from this project and consumers of this project simply need reference it to access its functionalty.
+The Services exposed by this project are used to encapsulate data management and consumers of this project simply need reference it to access its functionalty.
 
 ## Test Project
 

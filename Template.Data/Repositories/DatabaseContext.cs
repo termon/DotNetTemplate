@@ -13,7 +13,8 @@ namespace Template.Data.Repositories
     {
          // authentication store
         public DbSet<User> Users { get; set; }
-
+        public DbSet<ForgotPassword> ForgotPasswords { get; set; }
+        
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
         }

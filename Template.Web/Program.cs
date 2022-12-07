@@ -11,15 +11,15 @@ builder.Services.AddCookieAuthentication();
 
 builder.Services.AddDbContext<DatabaseContext>( options => {
     // Configure connection string for selected database in appsettings.json
-
     options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));   
     //options.UseMySql(builder.Configuration.GetConnectionString("MySql"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySql")));
     //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"));
     //options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));    
-});  
+});
 
-// Add UserService to DI   
+// Add Application Services to DI   
 builder.Services.AddTransient<IUserService,UserServiceDb>();
+builder.Services.AddTransient<IEmailService,SmtpMailService>();
 
 // ** Required to enable asp-authorize Taghelper **            
 builder.Services.AddHttpContextAccessor(); 

@@ -8,8 +8,6 @@ using Template.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Template.Core.Security;
 using Template.Web.ViewModels.User;
-using System.Net.Mail;
-using System.Net;
 
 /**
  *  User Management Controller
@@ -19,10 +17,10 @@ namespace Template.Web.Controllers
     public class UserController : BaseController
     {
         private readonly IConfiguration _config;
-        private readonly IEmailService _mailer;
+        private readonly IMailService _mailer;
         private readonly IUserService _svc;
 
-        public UserController(IUserService svc, IConfiguration config, IEmailService mailer)
+        public UserController(IUserService svc, IConfiguration config, IMailService mailer)
         {        
             _config = config;
             _mailer = mailer;

@@ -5,7 +5,7 @@ using Template.Core.Services;
 
 namespace Template.Data.Services;
 
-public class SmtpMailService : IEmailService
+public class SmtpMailService : IMailService
 {
     private readonly string _from;
     private readonly string _host;
@@ -30,10 +30,12 @@ public class SmtpMailService : IEmailService
         // now configure smtp client
         var client = new SmtpClient(_host, _port)
         {
+            UseDefaultCredentials = false,
             Credentials = new NetworkCredential(_username, _password),
-            EnableSsl = true
+            EnableSsl = true,
+            DeliveryMethod = SmtpDeliveryMethod.Network
         };
-        try
+        //try
         {
             // construct the mail message
             var mail = new MailMessage
@@ -42,6 +44,7 @@ public class SmtpMailService : IEmailService
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = asHtml,
+
             };
             mail.To.Add(to);
             
@@ -49,8 +52,9 @@ public class SmtpMailService : IEmailService
             client.Send(mail);  
             return true;
         }
-        catch (Exception)
+        //catch (Exception e)
         {
+            
             // could not send email
             return false;
         }
@@ -82,7 +86,7 @@ public class SmtpMailService : IEmailService
             await client.SendMailAsync(mail);  // client.Send(from, to, subject, message);
             return true;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return false;
         }

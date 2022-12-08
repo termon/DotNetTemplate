@@ -1,5 +1,4 @@
-
-# DotNet 6 Clean Architecture MVC Solution
+# DotNet 7 Clean Architecture MVC Solution
 
 This .NET project `Template` demonstrates concept of separation of concerns (SOC) and is a simple implementation of the Clean Architecture. When installed and used to create a new project, all references to ```Template``` will be replaced with the name of your project.
 
@@ -11,29 +10,39 @@ Password hashing functionality added via the ```Template.Core.Security.Hasher```
 
 ## Data Project
 
-The Data project encapsulates all data related concerns. It provides an implementation of ```Template.Core.Services.IUserService``` using EntityFramework to handle data storage/retrieval. It defaults to using Sqlite for portability across platforms.
+The Data project encapsulates all data related concerns and provides implementations of any service interfaces defined in the core project. These include:
 
-The Services exposed by this project are used to encapsulate data management and consumers of this project simply need reference it to access its functionalty.
+1. An implementation of ```Template.Core.Services.IUserService``` using EntityFramework to handle data storage/retrieval is provided via ```Template.Data.Services.UserServiceDb```.
+2. An implementation of ```Template.Core.Services.IMailService``` using the .NET Smtp Mail provider to handle email sending is provided via ```Template.Data.Services.SmtpMailService```.
+
 
 ## Test Project
 
-The Test project references the Core and Data projects and should implement unit tests to test any service implementations created in the Data project. A template test is provided for implementation of IUserService and the tests should be extended to fully exercise the functionality of your Service.
+The Test project references the Core and Data projects and should implement unit tests to test any service implementations created in the Data project. A sample test file is provided for implementation of IUserService. You should provide your own tests to exercise the functionality of any services you create.
 
 ## Web Project
 
-The Web project uses the MVC pattern to implement a web application. It references the Core and Data projects and uses the exposed services and models to access data management functionality. This allows the Web project to be completely independent of the persistence framework used in the Data project.
+The Web project uses the MVC pattern to implement a web application. It references the Core and Data projects and uses the exposed services and models to access data management functionality. This allows the Web project to be completely independent of the service implementation details defined in the Data project.
 
 ### Dependency Injection
 
-The DbContext and IUserService are added to the dependency injection container on startup. The DbContext can be configured in ```Program.cs``` to use either ```Sqlite``` (default), ```MySql```, ```Postres``` or ```SqlServer``` databases. Connection strings for each database should be configured in ```appsettings.json``` with XXX replaced with your particular settings.
+The DI container is used to manage creation of services that are consumed in the project and are configured in ```Program.cs```.
 
-```json
-"ConnectionStrings": {
-    "SqlServer": "Server=(localdb)\\mssqllocaldb;Database=XXX;Trusted_Connection=True;",
-    "MySql":     "server=localhost; port=3306; database=XXX; user=XXX; password=XXX",
-    "Postgres":  "host=localhost; port=5432; database=XXX; username=XXX; password=XXX",
-    "Sqlite":    "Filename=data.db"
-  },
+The EntityFramework ```DbContext``` can be configured to use either ```Sqlite``` (default), ```MySql```, ```Postgres``` or ```SqlServer``` databases. Connection strings for each database should be configured in ```appsettings.json```. Default configuration example is shown below.
+
+```c#
+builder.Services.AddDbContext<DatabaseContext>( options => {
+    // Configure connection string for selected database in appsettings.json
+    options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));   
+});
+```
+
+Implementations of ```IUserService``` and ```IMailService``` defined in the data project, are also added to the DI container as shown below.
+
+```c#
+// Add Application Services to DI   
+builder.Services.AddTransient<IUserService,UserServiceDb>();
+builder.Services.AddTransient<IMailService,SmtpMailService>();
 ```
 
 ### Identity
@@ -42,7 +51,7 @@ The project provides extension methods to enable:
 
 1. User Identity using cookie authentication is enabled without using the boilerplate template used in the standard web projects (mvc,web). This allows the developer to gain a better appreciation of how Identity is implemented. The core project implements a User model and the data project UserService implementation provides user management functionality such as Authenticate, Register, Change Password, Update Profile etc.
 
-The Web project implements a UserController with actions for Login/Register/NotAuthorized/NotAuthenticated etc. The ```AuthBuilder``` helper class defined in ```Template.Web.Helpers``` provides a ```BuildClaimsPrinciple``` method to build a set of user claims for User Login action when using cookie authentication and this can be modified to amend the claims added to the cookie.
+The Web project implements a UserController with actions for Login/Register/NotAuthorized/NotAuthenticated etc. These are implemented using the ```IUserService``` outlined above. The ```AuthBuilder``` helper class defined in ```Template.Web.Helpers``` provides a ```BuildClaimsPrinciple``` method to build a set of user claims for User Login action when using cookie authentication and this can be modified to amend the claims added to the cookie.
 
 To enable cookie Authentication the following statement is included in Program.cs.
 
@@ -103,7 +112,7 @@ To install this solution as a template (template name is **termonclean**)
 
 3. Once installed you can create a new project using this template.
 
-    ```dotnet new termonclean -o SolutionName```
+    ```dotnet new termonclean -n SolutionName```
 
 4. To uninstall a template (no longer can be used with dotnet new ).
 

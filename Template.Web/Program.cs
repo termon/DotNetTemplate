@@ -6,11 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ** Add Cookie Authentication via extension method **
+// Configure Authentication / Authorisation via extension methods 
 builder.Services.AddCookieAuthentication();
+//builder.Services.AddPolicyAuthorisation();
 
 builder.Services.AddDbContext<DatabaseContext>( options => {
     // Configure connection string for selected database in appsettings.json
+
     options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));   
     //options.UseMySql(builder.Configuration.GetConnectionString("MySql"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySql")));
     //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"));

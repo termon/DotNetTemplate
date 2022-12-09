@@ -9,6 +9,7 @@ a.navbar-brand {
 
 a {
   color: #0077cc;
+  /* color: var(--bs-green) */
 }
 
 .btn-primary {
@@ -45,4 +46,14 @@ button.accept-policy {
   width: 100%;
   white-space: nowrap;
   line-height: 60px;
+}
+
+/* Define a new text colour using bootstrap css variables
+ * https://getbootstrap.com/docs/5.2/customize/css-variables/
+ */
+.text-lightgray {
+  color: var(--bs-gray-100);
+}
+.text-darkgray {
+  color: var(--bs-gray-900);
 }

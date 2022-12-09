@@ -35,7 +35,7 @@ public class SmtpMailService : IMailService
             EnableSsl = true,
             DeliveryMethod = SmtpDeliveryMethod.Network
         };
-        //try
+        try
         {
             // construct the mail message
             var mail = new MailMessage
@@ -52,9 +52,8 @@ public class SmtpMailService : IMailService
             client.Send(mail);  
             return true;
         }
-        //catch (Exception e)
-        {
-            
+        catch (Exception)
+        { 
             // could not send email
             return false;
         }

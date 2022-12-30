@@ -1,13 +1,11 @@
-
 using Xunit;
+using System;
+using Microsoft.EntityFrameworkCore;
 using Template.Core.Models;
 using Template.Core.Services;
-
-
 using Template.Data.Services;
-using Microsoft.EntityFrameworkCore;
 using Template.Data.Repositories;
-using System;
+using Template.Core.Security;
 
 namespace Template.Test
 {
@@ -20,7 +18,7 @@ namespace Template.Test
             // configure the data context options to use sqlite for testing
             var options = DatabaseContext.OptionsBuilder                            
                             .UseSqlite("Filename=test.db")
-                            //.LogTo(Console.WriteLine)
+                            //.LogTo(Console.WriteLine).EnableSensitiveDataLogging()
                             .Options;
 
             // create service with new context
@@ -29,7 +27,7 @@ namespace Template.Test
         }
 
          [Fact]
-        public void EmptyDb_ShouldReturn_NoUsers()
+        public void GetUsers_WhenNoneExist_ShouldReturnNone()
         {
             // act
             var users = service.GetUsers();
@@ -39,7 +37,7 @@ namespace Template.Test
         }
         
         [Fact]
-        public void Adding_Users_ShouldWork()
+        public void AddUser_When2ValidUsersAdded_ShouldCreate2Users()
         {
             // arrange
             service.AddUser("admin", "admin@mail.com", "admin", Role.admin );
@@ -53,7 +51,48 @@ namespace Template.Test
         }
 
         [Fact]
-        public void Updating_User_ShouldWork()
+        public void GetPage1WithpageSize2_When3UsersExist_ShouldReturn2Pages()
+        {
+            // act
+            service.AddUser("admin", "admin@mail.com", "admin", Role.admin );
+            service.AddUser("manager", "manager@mail.com", "manager", Role.manager);
+            service.AddUser("guest", "guest@mail.com", "guest", Role.guest);
+
+            // return first page with 2 users per page
+            var pagedUsers = service.GetUsers(1,2);
+
+            // assert
+            Assert.Equal(2, pagedUsers.TotalPages);
+        }
+
+        [Fact]
+        public void GetPage1WithPageSize2_When3UsersExist_ShouldReturnPageWith2Users()
+        {
+            // act
+            service.AddUser("admin", "admin@mail.com", "admin", Role.admin );
+            service.AddUser("manager", "manager@mail.com", "manager", Role.manager);
+            service.AddUser("guest", "guest@mail.com", "guest", Role.guest);
+
+            var pagedUsers = service.GetUsers(1,2);
+
+            // assert
+            Assert.Equal(2, pagedUsers.Data.Count);
+        }
+
+        [Fact]
+        public void GetPage1_When0UsersExist_ShouldReturn0Pages()
+        {
+            // act
+            var pagedUsers = service.GetUsers(1,2);
+
+            // assert
+            Assert.Equal(0, pagedUsers.TotalPages);
+            Assert.Equal(0, pagedUsers.TotalRows);
+            Assert.Empty(pagedUsers.Data);
+        }
+
+        [Fact]
+        public void UpdateUser_WhenUserExists_ShouldWork()
         {
             // arrange
             var user = service.AddUser("admin", "admin@mail.com", "admin", Role.admin );
@@ -135,7 +174,7 @@ namespace Template.Test
         
             // assert
             Assert.NotNull(user);
-            Assert.Equal("password", user.Password);          
+            Assert.True(Hasher.ValidateHash(user.Password, "password"));          
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-namespace Template.Core.Models;
+namespace Template.Core.Entities;
 
 public class Paged<T> {        
     public List<T> Data { get; set;}

@@ -5,6 +5,7 @@ using Template.Core.Security;
 using Template.Data.Repositories;
 
 namespace Template.Data.Services;
+
 public class UserServiceDb : IUserService
 {
     private DatabaseContext  ctx;
@@ -27,12 +28,10 @@ public class UserServiceDb : IUserService
         return ctx.Users.ToList();
     }
 
-    public Paged<User> GetUsers(int page, int size,string orderBy, string direction)
-    {
-        direction = direction.ToLower();
-        orderBy = orderBy.ToLower();
-
-        var query = (orderBy,direction) switch
+     // retrieve paged list of users
+    public Paged<User> GetUsers(int page = 1, int size = 10, string orderBy = "id", string direction = "asc")
+    {          
+        var query = (orderBy.ToLower(),direction.ToLower()) switch
         {
             ("id","asc")     => ctx.Users.OrderBy(r => r.Id),
             ("id","desc")    => ctx.Users.OrderByDescending(r => r.Id),
@@ -42,21 +41,8 @@ public class UserServiceDb : IUserService
             ("email","desc") => ctx.Users.OrderByDescending(r => r.Email),
             _                => ctx.Users.OrderBy(r => r.Id)
         };
-   
-        // determine total avilable rows
-        var totalRows = query.Count(); 
-        // slice page required         
-        var data = query.Skip((page-1)*size).Take(size).ToList();
-        // build paged result
-        var paged = new Paged<User> {
-            Data = data,
-            TotalRows = totalRows,
-            PageSize = size,
-            CurrentPage = page,
-            OrderBy = orderBy,
-            Direction = direction
-        };
-        return paged;
+
+        return query.ToPaged(page,size,orderBy,direction);
     }
 
     // Retrive User by Id 

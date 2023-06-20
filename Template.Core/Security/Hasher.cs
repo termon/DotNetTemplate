@@ -13,7 +13,7 @@ namespace Template.Core.Security
         // AMC - verify if a string is already hashed
         public static bool IsHashed(string base64)
         {
-            if (base64.Contains(':'))
+            if (base64 is not null && base64.Contains(':'))
             {
                 base64 = base64.Trim();
                 var parts = base64.Split(':');
@@ -27,8 +27,8 @@ namespace Template.Core.Security
         // Generated Salt and Hash returned
         public static string CalculateHash(string input)
         {
-            // AMC check that input is not already hashed
-            if (IsHashed(input)) return input;
+            // AMC check if input is null or already hashed
+            if (input is null || IsHashed(input)) return input;
 
             var salt = GenerateSalt(16);
             var bytes = KeyDerivation.Pbkdf2(input, salt, KeyDerivationPrf.HMACSHA512, 10000, 16);

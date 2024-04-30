@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllersWithViews();
+
 // Configure Authentication / Authorisation via extension methods 
 builder.Services.AddCookieAuthentication();
 //builder.Services.AddPolicyAuthorisation();
@@ -26,9 +28,6 @@ builder.Services.AddTransient<IMailService,SmtpMailService>();
 // ** Required to enable asp-authorize Taghelper **            
 builder.Services.AddHttpContextAccessor(); 
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,7 +46,7 @@ else
     }
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

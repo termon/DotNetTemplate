@@ -2,17 +2,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-
-using Template.Core.Entities;
-using Template.Core.Services;
 using Microsoft.AspNetCore.Authorization;
-using Template.Core.Security;
+using System.Security.Claims;
+
+using Template.Core.Services;
 using Template.Web.Models.User;
+using Template.Core.Entities;
+using Template.Data.Security;
 
 /**
  *  User Management Controller
  */
 namespace Template.Web.Controllers;
+
 public class UserController : BaseController
 {
     private readonly IConfiguration _config;
@@ -27,10 +29,10 @@ public class UserController : BaseController
     }
 
     // HTTP GET - Display Paged List of Users
-    [Authorize]
+    [Authorize(Roles="admin")]
     public ActionResult Index(int page=1, int size=20, string order="id", string direction="asc")
     {
-        var paged = _svc.GetUsers(page,size,order,direction);
+        var paged = _svc.GetUsers(page,size,order,direction);      
         return View(paged);
     }
 
@@ -55,7 +57,10 @@ public class UserController : BaseController
         }
 
         // Login Successful, so sign user in using cookie authentication
-        await SignInCookie(user);
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            BuildClaimsPrincipal(user)
+        );
 
         Alert("Successfully Logged in", AlertType.info);
 
@@ -71,14 +76,14 @@ public class UserController : BaseController
     // HTTP POST - Register action
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Register([Bind("Name,Email,Password,PasswordConfirm,Role")] RegisterViewModel m)       
+    public IActionResult Register([Bind("Name,Email,Password,PasswordConfirm")] RegisterViewModel m)       
     {
         if (!ModelState.IsValid)
         {
             return View(m);
         }
         // add user via service
-        var user = _svc.AddUser(m.Name, m.Email,m.Password, m.Role);
+        var user = _svc.AddUser(m.Name, m.Email,m.Password, Role.guest);
         
         // check if error adding user and display warning
         if (user == null) {
@@ -94,7 +99,7 @@ public class UserController : BaseController
     [Authorize]
     public IActionResult UpdateProfile()
     {
-       // use BaseClass helper method to retrieve Id of signed in user 
+        // use BaseClass helper method to retrieve Id of signed in user 
         var user = _svc.GetUser(User.GetSignedInUserId());
         var profileViewModel = new ProfileViewModel { 
             Id = user.Id, 
@@ -109,7 +114,7 @@ public class UserController : BaseController
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateProfile([Bind("Id,Name,Email,Role")] ProfileViewModel m)       
+    public async Task<IActionResult> UpdateProfile([Bind("Id,Name,Email")] ProfileViewModel m)       
     {
         var user = _svc.GetUser(m.Id);
         // check if form is invalid and redisplay
@@ -120,8 +125,7 @@ public class UserController : BaseController
 
         // update user details and call service
         user.Name = m.Name;
-        user.Email = m.Email;
-        user.Role = m.Role;        
+        user.Email = m.Email; 
         var updated = _svc.UpdateUser(user);
 
         // check if error updating service
@@ -142,7 +146,7 @@ public class UserController : BaseController
     [Authorize(Roles="admin")]
     public IActionResult Update(int id)
     {
-       // retrieve user 
+        // retrieve user 
         var user = _svc.GetUser(id);
         var profileViewModel = new ProfileViewModel { 
             Id = user.Id, 
@@ -258,7 +262,7 @@ public class UserController : BaseController
         var message = @$" 
             <h3>Password Reset</h3>
             <a href='{url}'>
-               {url}
+                {url}
             </a>
         ";
         
@@ -274,10 +278,11 @@ public class UserController : BaseController
     }
 
     // HTTP GET - Display Reset password page
-    public IActionResult ResetPassword(string token, string email)
+    public IActionResult ResetPassword(string email, string token)
     {
-        return View();            
+        return View(new ResetPasswordViewModel { Email = email, Token = token });            
     }
+    
 
     // HTTP POST - ResetPassword action
     [HttpPost]
@@ -329,12 +334,30 @@ public class UserController : BaseController
         return Json(true);                  
     }
 
+    // =========================== PRIVATE UTILITY METHODS ==============================
+
+    // return a claims principle using the info from the user parameter
+    private ClaimsPrincipal BuildClaimsPrincipal(User user)
+    { 
+        // define user claims
+        var claims = new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.Sid, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Role, user.Role.ToString())                              
+        }, CookieAuthenticationDefaults.AuthenticationScheme);
+
+        // build principal using claims
+        return  new ClaimsPrincipal(claims);
+    } 
+
     // Sign user in using Cookie authentication scheme
     private async Task SignInCookie(User user)
     {
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
-            AuthBuilder.BuildClaimsPrincipal(user)
+            BuildClaimsPrincipal(user)
         );
     }
 }

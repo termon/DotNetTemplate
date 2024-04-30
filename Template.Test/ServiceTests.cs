@@ -1,11 +1,10 @@
 using Xunit;
-using System;
 using Microsoft.EntityFrameworkCore;
 using Template.Core.Entities;
 using Template.Core.Services;
 using Template.Data.Services;
 using Template.Data.Repositories;
-using Template.Core.Security;
+using Template.Data.Security;
 
 namespace Template.Test;
 public class ServiceTests

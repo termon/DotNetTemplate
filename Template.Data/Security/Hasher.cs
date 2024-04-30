@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 // https://www.devtrends.co.uk/blog/hashing-encryption-and-random-in-asp.net-core
 // Simple class to generate and verify a Hash
 
-namespace Template.Core.Security
+namespace Template.Data.Security
 {
     public static class Hasher
     {    

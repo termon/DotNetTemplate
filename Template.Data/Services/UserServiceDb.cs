@@ -1,7 +1,7 @@
 
 using Template.Core.Entities;
 using Template.Core.Services;
-using Template.Core.Security;
+using Template.Data.Security;
 using Template.Data.Repositories;
 
 namespace Template.Data.Services;

@@ -1,4 +1,4 @@
-# DotNet 7 Clean Architecture MVC Solution
+# DotNet 8 Clean Architecture MVC Solution
 
 This .NET project `Template` demonstrates concept of separation of concerns (SOC) and is a simple implementation of the Clean Architecture. When installed and used to create a new project, all references to ```Template``` will be replaced with the name of your project.
 
@@ -6,14 +6,14 @@ This .NET project `Template` demonstrates concept of separation of concerns (SOC
 
 The Core project contains all domain entities and service layer interfaces and has no dependencies.
 
-Password hashing functionality added via the ```Template.Core.Security.Hasher``` class. This is used in the Data project UserService to hash the user password before storing in database.
-
 ## Data Project
 
 The Data project encapsulates all data related concerns and provides implementations of any service interfaces defined in the core project. These include:
 
 1. An implementation of ```Template.Core.Services.IUserService``` using EntityFramework to handle data storage/retrieval is provided via ```Template.Data.Services.UserServiceDb```.
 2. An implementation of ```Template.Core.Services.IMailService``` using the .NET Smtp Mail provider to handle email sending is provided via ```Template.Data.Services.SmtpMailService```.
+
+Password hashing functionality is added via the ```Template.Data.Security.Hasher``` class. This is used in the Data project UserService to hash the user password before storing in database.
 
 
 ## Test Project
@@ -53,7 +53,7 @@ The project provides extension methods to enable:
 
 1. User Identity using cookie authentication is enabled without using the boilerplate template used in the standard web projects (mvc,web). This allows the developer to gain a better appreciation of how Identity is implemented. The core project implements a User model and the data project UserService implementation provides user management functionality such as Authenticate, Register, Change Password, Update Profile etc.
 
-The Web project implements a UserController with actions for Login/Register/NotAuthorized/NotAuthenticated etc. These are implemented using the ```IUserService``` outlined above. The ```AuthBuilder``` helper class defined in ```Template.Web.Helpers``` provides a ```BuildClaimsPrinciple``` method to build a set of user claims for User Login action when using cookie authentication and this can be modified to amend the claims added to the cookie.
+The Web project implements a UserController with actions for Login/Register/NotAuthorized/NotAuthenticated etc. These are implemented using the ```IUserService``` outlined above. The ```UserController``` provides a ```BuildClaimsPrinciple``` method to build a set of user claims for User Login action when using cookie authentication and this can be modified to amend the claims added to the cookie.
 
 To enable cookie Authentication the following statement is included in Program.cs.
 
@@ -76,10 +76,11 @@ app.UseAuthorization();
 
     ```Alert("The User Was Registered Successfully", AlertType.info);```
 
-2. A ClaimsPrincipal authentication extension method
+2. ClaimsPrincipal authentication extension methods can be used in a Controller/View
     * ```User.GetSignedInUserId()``` - returns Id of current logged in user or 0 if not logged in
+    * `User.HasOneOfRoles("...")` - accepts a comma separated string of roles and returns a boolean (true if current user has one of these roles, otherwise false). 
 
-3. Two custom TagHelpers are included that provide
+3. Custom TagHelpers are included that provide
 
     a. Authentication and authorisation Tags
 
@@ -87,12 +88,16 @@ app.UseAuthorization();
 
     * ```<p asp-roles="admin,manager">Only displayed if the user has one of specified roles</p>```
 
-    Note: to enable these tag helpers Program.cs needs following service added to DI container
-    ```builder.Services.AddHttpContextAccessor();```
-
-    b. Conditional Display Tag
+    To enable these tag helpers Program.cs needs following service added to DI container
+    `builder.Services.AddHttpContextAccessor();` (see **Note** below)
+    
+    b. Conditional Display 
 
     * ```<p asp-condtion="@some_boolean_expression">Only displayed if the condition is true</p>```
+
+    **Note**: instead of using `asp-authorized` and `asp-roles` we can provide authorisation checks in Razor views using `asp-condition` tag helper and `HasOneOfRoles` extension method. 
+    * check a users authorisation `<div asp-condition=@User.HasOneOfRoles("admin,manager")>...</div>`
+    * check if a user is authenticated  `<div asp-condition=@(User.Identity.IsAuthenticated)>...<\div>`
 
 4. A Breadcrumbs partial view is contained in ```Views/Shared/_Breadcrumbs.cshtml``` and can be added to a View as shown in example below. The the model parameter is an array of tuples containing the route and breadcrumb.
 

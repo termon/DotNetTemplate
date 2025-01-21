@@ -31,7 +31,7 @@ public class ServiceTests
         var users = service.GetUsers();
 
         // assert
-        Assert.Equal(0, users.Count);
+        Assert.Empty(users);
     }
     
     [Fact]

@@ -143,8 +143,8 @@ public class UserServiceDb : IUserService
             // invalidate any previous tokens
             ctx.ForgotPasswords
                 .Where(t => t.Email == email && t.ExpiresAt > DateTime.Now).ToList()
-                .ForEach(t => t.ExpiresAt = DateTime.Now);
-            var f = new ForgotPassword { Email = email };
+                .ForEach(t => t.ExpiresAt = DateTime.MinValue);
+            var f = new ForgotPassword { Email = email, Token = Guid.NewGuid().ToString() };
             ctx.ForgotPasswords.Add(f);
             ctx.SaveChanges();
             return f.Token;

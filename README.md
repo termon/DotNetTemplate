@@ -1,4 +1,4 @@
-# DotNet 8 Clean Architecture MVC Solution
+# DotNet 9 Clean Architecture MVC Solution
 
 This .NET project `Template` demonstrates concept of separation of concerns (SOC) and is a simple implementation of the Clean Architecture. When installed and used to create a new project, all references to ```Template``` will be replaced with the name of your project.
 

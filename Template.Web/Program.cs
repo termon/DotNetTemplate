@@ -14,8 +14,7 @@ builder.Services.AddCookieAuthentication();
 
 builder.Services.AddDbContext<DatabaseContext>( options => {
     // Configure connection string for selected database in appsettings.json
-
-    options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));   
+    options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite")).LogTo(Console.WriteLine);   
     //options.UseMySql(builder.Configuration.GetConnectionString("MySql"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySql")));
     //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"));
     //options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));    
